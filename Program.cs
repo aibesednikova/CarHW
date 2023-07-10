@@ -252,6 +252,7 @@ namespace DelegatesAndEvents
             //цикл задаёт поведение экземпляром из списка автомобилей при срабатывании событий Finish и Crash
             foreach (var item in _race)
             {
+                //для спортивных авто
                 if (item.GetType().Equals(typeof(SportCar)))
                 {
                     (item as SportCar).Finish += () =>
@@ -264,6 +265,8 @@ namespace DelegatesAndEvents
                         item.carCrash = true;
                     };
                 }
+
+                //для легковушек
                 if (item.GetType().Equals(typeof(PassengerCar)))
                 {
                     (item as PassengerCar).Finish += () =>
@@ -276,6 +279,8 @@ namespace DelegatesAndEvents
                         item.carCrash = true;
                     };
                 }
+
+                //для грузовиков
                 if (item.GetType().Equals(typeof(CargoCar)))
                 {
                     (item as CargoCar).Finish += () =>
@@ -288,6 +293,8 @@ namespace DelegatesAndEvents
                         item.carCrash = true;
                     };
                 }
+
+                //для автобусов
                 if (item.GetType().Equals(typeof(Bus)))
                 {
                     (item as Bus).Finish += () =>
@@ -347,7 +354,7 @@ namespace DelegatesAndEvents
                     {
                         countOfFinish++;
                         WriteLine($"Гонку выиграл {item.Name} на {countSec}-й секунде!"); 
-                        Winner winnerOfRace = new Winner(item.Name, countSec); //создаем объект виннер гонки
+                        Winner winnerOfRace = new Winner(item.Name, countSec); //создаем объект виннер (победитель) гонки
                         winnerOfRace.WinnerLog(); //записываем победу в лог по имени виннера
                         Top10Winners(); // считываем из файла список топ10 победителей
                         AddWinnerToTOP(winnerOfRace); //добавляем в список виннера гонки, если он туда помещается
@@ -356,7 +363,7 @@ namespace DelegatesAndEvents
                     }
                 }
                 
-                //останавливаем цикл do-while, когда кто-нибудь финишировал либо когда все сломались
+                //останавливаем цикл do-while, когда кто-нибудь финишировал, либо когда все сломались
                 if (countOfFinish > 0)
                 {
                     break;
@@ -437,27 +444,47 @@ namespace DelegatesAndEvents
             //}
         }
     }
-
+    /// <summary>
+    /// Класс <c>Winner</c> победитель гонки
+    /// </summary>
     public class Winner
     {
         public readonly string _winner = "";
         public readonly int _winnerTime = 0;
         public readonly DateTime _date = DateTime.Now;
+        /// <summary>
+        /// Конструктор, принимающий только название автомобиля и время, за которое он проехал. Дата гонки при этом устанавливается текущая. Используется для новых победителей.
+        /// </summary>
+        /// <param name="winner">используется для записи названия автомобиля, тип string</param>
+        /// <param name="winnerTime">число секунд, за которые автомобиль финишировал</param>
         public Winner(string winner, int winnerTime)
         {
             _winner = winner;
             _winnerTime = winnerTime;
         }
+        /// <summary>
+        /// Конструктор, принимающий дату гонки, затраченное время и название автомобиля. Используется для восстановления списка победителей из файла
+        /// </summary>
+        /// <param name="date">Дата гонки</param>
+        /// <param name="winnerTime">Затраченное время (в секундах)</param>
+        /// <param name="winner">Название автомобиля - победителя гонки</param>
         public Winner(DateTime date, int winnerTime, string winner)
         {
             _winner = winner;
             _winnerTime = winnerTime;
             _date = date;
         }
+        /// <summary>
+        /// перегрузка вывода
+        /// </summary>
+        /// <returns>возвращает строку с данными победителя для записи в список и логи</returns>
         public override string ToString()
         {
             return $"{_date}: {_winnerTime}sec - {_winner}.";
         }
+        /// <summary>
+        /// Создаёт либо дописывает в лог-файл победителя его ноувю победу. Получается список побед конкретного автомобиля.
+        /// </summary>
         public void WinnerLog()
         {
             string filePath = _winner +"_log.txt";
@@ -470,6 +497,10 @@ namespace DelegatesAndEvents
                 }
             }
         }
+        /// <summary>
+        /// Записывает рейтинг победителей из сортированного списка в файл
+        /// </summary>
+        /// <param name="top10winners">Сортированный список победителей гонок</param>
         public static void Top10WinnersToFile(SortedList<int, Winner> top10winners)
         {
             string filePath = "top10winners.txt";
@@ -487,9 +518,17 @@ namespace DelegatesAndEvents
             }
         }
     }
-
+    /// <summary>
+    /// Реализация создания набора автомобилей для гонки
+    /// </summary>
     class Program
     {
+        /// <summary>
+        /// Вспомогательный метод проверки выбранного пункта меню, проверяет, что пользователь ввёл допустимое значение, иначе с помощь рекурсии вызывается повторно
+        /// </summary>
+        /// <param name="c">принимает выбранный пункт меню</param>
+        /// <param name="i">принимает общее число пунктов меню</param>
+        /// <returns>возвращает выбранный пользователем допустимый номер пункта меню</returns>
         static int yesNo(int c, int i )
         {
             bool mark = false;
@@ -509,6 +548,10 @@ namespace DelegatesAndEvents
             }
             return c;
         }
+        /// <summary>
+        /// Метод, непосредственно создающий список участников предстоящей гонки
+        /// </summary>
+        /// <returns>возвращает список автомобилей, каждый автомобиль имеет название и тип</returns>
         static List<Car> RaceMembers()
         {
             List<Car> race = new List<Car> { };
@@ -566,7 +609,6 @@ namespace DelegatesAndEvents
         }
         static void Main(string[] args)
         {
-
             //List<Car> race = new List<Car>
             //{
             //    new SportCar() { Name = "BMW" }, new PassengerCar() { Name = "Жигули" }, new CargoCar() { Name = "КАМАЗ" }, new Bus() { Name = "Икарус" }, new Bus() { Name = "ЛиАЗ" }
